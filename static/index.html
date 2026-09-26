@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interview Buddy</title>
+<style>
+  :root {
+    --bg: #0f1420; --panel: #171e2e; --card: #1d2740; --line: #2a3552;
+    --text: #e8edf7; --dim: #93a0b8; --accent: #5b9dff; --accent2: #3f7ae0;
+    --good: #4ade80; --warn: #fbbf24; --rec: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 18px; margin: 0; font-weight: 700; }
+  header .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn); }
+  header .dot.ok { background: var(--good); }
+  header select {
+    background: var(--card); color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 10px; font-size: 14px;
+  }
+  header .spacer { flex: 1; }
+  header button.ghost {
+    background: none; border: 1px solid var(--line); color: var(--dim);
+    border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer;
+  }
+  header button.ghost:disabled { opacity: .4; cursor: default; }
+  header button.ghost:not(:disabled):hover { color: var(--text); border-color: var(--accent); }
+
+  main { flex: 1; display: flex; min-height: 0; }
+  #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex;
+          flex-direction: column; gap: 12px; }
+  .bubble {
+    max-width: 72%; padding: 12px 16px; border-radius: 16px;
+    line-height: 1.5; font-size: 15px; white-space: pre-wrap;
+  }
+  .bubble.you { align-self: flex-end; background: var(--accent2); color: #fff;
+                border-bottom-right-radius: 4px; }
+  .bubble.buddy { align-self: flex-start; background: var(--card);
+                  border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .quick { align-self: flex-start; max-width: 72%; font-size: 13px;
+           color: var(--warn); padding: 0 6px; margin-top: -6px; }
+  .hint { align-self: center; color: var(--dim); font-size: 13px; text-align: center; }
+  .bubble.system { align-self: center; background: none; color: var(--dim); font-size: 13px; }
+
+  /* mic button */
+  #micWrap { display: flex; flex-direction: column; align-items: center;
+             gap: 8px; padding: 14px; border-top: 1px solid var(--line); }
+  #mic {
+    width: 74px; height: 74px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--accent); color: #fff; font-size: 30px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .15s, background .15s; user-select: none;
+  }
+  #mic:hover { transform: scale(1.05); }
+  #mic.rec { background: var(--rec); animation: pulse 1.2s infinite; }
+  #mic:disabled { opacity: .45; cursor: default; transform: none; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,.5); }
+    70% { box-shadow: 0 0 0 18px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  }
+  #micLabel { font-size: 13px; color: var(--dim); }
+
+  /* side panel */
+  aside {
+    width: 290px; border-left: 1px solid var(--line); padding: 18px;
+    overflow-y: auto; background: var(--panel);
+  }
+  aside h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em;
+             color: var(--dim); margin: 0 0 10px; }
+  .statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .stat { background: var(--card); border: 1px solid var(--line);
+          border-radius: 10px; padding: 10px 12px; }
+  .stat b { display: block; font-size: 20px; }
+  .stat span { font-size: 11px; color: var(--dim); }
+  #fillers { font-size: 13px; color: var(--dim); line-height: 1.7; margin-bottom: 18px; }
+  #fillers b { color: var(--text); }
+  #report h3 { font-size: 15px; margin: 8px 0 4px; }
+  #report .score { font-size: 40px; font-weight: 800; color: var(--accent); }
+  #report ul { padding-left: 18px; margin: 6px 0; font-size: 13.5px;
+               line-height: 1.6; color: var(--text); }
+  #report p { font-size: 13.5px; line-height: 1.6; color: var(--text); }
+  #report .focus { background: rgba(91,157,255,.12); border: 1px solid var(--accent2);
+                   border-radius: 10px; padding: 10px 12px; font-size: 13.5px; }
+  #saved { font-size: 12px; color: var(--good); margin-top: 10px; }
+
+  /* start overlay */
+  #gate { position: fixed; inset: 0; background: rgba(10,14,22,.86);
+          display: flex; align-items: center; justify-content: center; z-index: 5; }
+  #gate .box { background: var(--panel); border: 1px solid var(--line);
+               border-radius: 16px; padding: 28px 30px; max-width: 420px; text-align: center; }
+  #gate h2 { margin: 0 0 8px; font-size: 20px; }
+  #gate p { color: var(--dim); font-size: 14px; line-height: 1.6; margin: 0 0 18px; }
+  #gate button {
+    background: var(--accent); color: #fff; border: none; border-radius: 10px;
+    padding: 12px 26px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  #err { color: var(--rec); font-size: 13px; margin-top: 10px; min-height: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="dot" id="healthDot"></div>
+  <h1>🎙️ Interview Buddy</h1>
+  <select id="mode">
+    <option value="interview">Interview — AI Engineer</option>
+    <option value="behavioral">Behavioral (STAR)</option>
+    <option value="daily">Daily English chat</option>
+  </select>
+  <div class="spacer"></div>
+  <button class="ghost" id="ttsToggle">🔊 Voice: on</button>
+  <button class="ghost" id="endBtn" disabled>End &amp; feedback</button>
+</header>
+
+<main>
+  <section id="chat"></section>
+  <aside>
+    <h2>Session</h2>
+    <div class="statgrid">
+      <div class="stat"><b id="qNow">0</b><span>question</span></div>
+      <div class="stat"><b id="qTot">–</b><span>total</span></div>
+      <div class="stat"><b id="turns">0</b><span>answers</span></div>
+      <div class="stat"><b id="fillerTotal">0</b><span>filler words</span></div>
+    </div>
+    <h2>Filler words</h2>
+    <div id="fillers">None yet — keep talking.</div>
+    <h2>Coach report</h2>
+    <div id="report"><p style="color:var(--dim);font-size:13px">
+      Ends the session and shows feedback here.</p></div>
+    <div id="saved"></div>
+  </aside>
+</main>
+
+<div id="micWrap">
+  <button id="mic" title="click to start / stop">🎤</button>
+  <div id="micLabel">Click the mic, answer out loud, click again to send</div>
+  <div id="err"></div>
+</div>
+
+<div id="gate">
+  <div class="box">
+    <h2>Ready to practice?</h2>
+    <p>Pick a mode above, then click Start. Buddy speaks each question —
+       answer out loud like a real interview. Speak for 30–90 seconds per answer.</p>
+    <button id="startBtn">Start session</button>
+    <div id="gateErr" style="color:var(--rec);font-size:13px;margin-top:10px"></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

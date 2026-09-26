@@ -1,0 +1,19 @@
+"""Central config — every knob in one place, env-overridable.
+
+Defaults already work on this machine (Ollama local + whisper `base`,
+both verified — see docs/01-concepts.md). No .env required to run.
+"""
+import os
+
+# LLM (Ollama's OpenAI-compatible endpoint)
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:14b")
+
+# STT (faster-whisper)
+WHISPER_MODEL = os.getenv("WHISPER_MODEL", "base")   # base=52x real-time here
+WHISPER_THREADS = int(os.getenv("WHISPER_THREADS", "8"))
+
+# Conversation
+MAX_HISTORY_TURNS = 10     # how many previous user/assistant turns the LLM sees
+SPOKEN_WORD_LIMIT = 90     # interviewer replies stay short enough to be spoken
+PORT = int(os.getenv("PORT", "8001"))
