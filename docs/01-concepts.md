@@ -64,10 +64,14 @@ provider becomes configuration, not code. Swap one env var → the same app
 runs against gpt-4o-mini, or later against your own fine-tuned model in
 vLLM. This exact abstraction is why phase 5 of fin-research-agent is cheap.
 
-**qwen3 specifics:** it's a *thinking* model — it may spend output tokens
-in `<think>…</think>` before the visible answer. We handle it twice:
-`/no_think` appended to the system prompt (a trained soft switch) keeps
-replies snappy, and a regex strips any think-block that still appears.
+**qwen3 specifics:** it's a *thinking* model — it spends output tokens in
+`<think>…</think>` before the visible answer. Measured here: a short
+interviewer reply cost **444 tokens / 53 s** with thinking on, **40 tokens /
+1.7 s** with Ollama's native `think: false` parameter — 30× for identical
+visible output. (The OpenAI-compat endpoint can't pass that flag, which is
+exactly why `llm.py` uses the native API.) A think-strip regex remains as a
+safety net. Latency lesson: *invisible tokens are still real time* — this
+is the same lesson as tracking cost per token in fin-research-agent.
 Cost tracking would count those tokens — latency you pay for nothing.
 
 ## 5. Prompt design: the parts that make it feel like an interviewer

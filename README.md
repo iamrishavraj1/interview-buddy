@@ -80,8 +80,9 @@ follow-up. Deterministic control, natural conversation.
   `localhost:8001`.
 - **"I didn't catch that"** every time → speak closer to the mic; check
   the input device in macOS Sound settings.
-- **First answer slow (~15 s)** → whisper model + Ollama warm-up; later
-  turns are fast. qwen thinking is disabled via `/no_think`.
+- **First answer slow (~15 s)** → whisper warms up in the background at
+  startup; after that turns take ~2-4 s. qwen's hidden "thinking" tokens
+  are disabled via Ollama's `think: false` (53 s → 1.7 s per reply).
 - **Connection refused** → `python server.py` not running, or Ollama app
   closed. Check `/api/health`.
 - Want a different voice/model → see `.env.example` (gemma4:26b works too).

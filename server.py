@@ -15,7 +15,9 @@ which is exactly right for a single user with blocking STT + LLM calls.
 """
 import shutil
 import tempfile
+import threading
 import uuid
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
@@ -25,13 +27,23 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import config
+import stt
 from llm import chat, extract_json
 from prompts import feedback_system, interviewer_system
 from questions import DAILY_STARTERS
 from session import SESSIONS, Session, get
 from stt import transcribe
 
-app = FastAPI(title="Interview Buddy", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # Pre-warm whisper in the background so the FIRST answer isn't slow
+    # (model load ~10 s, transcription after that ~0.5 s — docs/01 §3).
+    threading.Thread(target=stt.get_model, daemon=True).start()
+    yield
+
+
+app = FastAPI(title="Interview Buddy", version="1.0.0", lifespan=lifespan)
 
 OPENINGS = {
     "interview": ("Hi! I'm Buddy. We'll go through {n} questions, and you answer "
@@ -108,17 +120,27 @@ def answer(session_id: str = Form(...), audio: UploadFile = File(...)) -> JSONRe
         f"Next bank question: {next_q}\n"
         f"Decide: ask ONE follow-up on the same question (followed_up=true) if the "
         f"answer lacks depth, specifics or a result — otherwise move on "
-        f"(followed_up=false)."
+        f"(followed_up=false). If your 'spoken' ends with a question about this "
+        f"same answer, followed_up MUST be true."
     )
-    raw = chat(interviewer_system(s.mode),
-               s.llm_messages(transcript, note), temperature=0.7)
-    try:
-        data = extract_json(raw)
-        spoken = str(data.get("spoken") or raw)[:600]
-        quick = str(data.get("quick_feedback") or "")
-        followed_up = bool(data.get("followed_up"))
-    except (ValueError, TypeError):  # model broke the contract — degrade nicely
-        spoken, quick, followed_up = raw[:600], "", False
+
+    def llm_turn() -> str:
+        return chat(interviewer_system(s.mode),
+                    s.llm_messages(transcript, note), temperature=0.7)
+
+    def parse(raw: str) -> tuple[str, str, bool]:
+        try:
+            data = extract_json(raw)
+            return (str(data.get("spoken") or ""), str(data.get("quick_feedback") or ""),
+                    bool(data.get("followed_up")))
+        except (ValueError, TypeError):  # model broke the contract — degrade nicely
+            return raw[:600], "", False
+
+    spoken, quick, followed_up = parse(llm_turn())
+    if not spoken.strip():            # rare Ollama hiccup: one retry, then a canned line
+        spoken, quick, followed_up = parse(llm_turn())
+    if not spoken.strip():
+        spoken, quick, followed_up = "Could you go a bit deeper on that?", "", True
 
     s.add_user(transcript)
     s.add_assistant(spoken)
