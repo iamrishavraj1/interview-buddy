@@ -13,6 +13,10 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:14b")
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "base")   # base=52x real-time here
 WHISPER_THREADS = int(os.getenv("WHISPER_THREADS", "8"))
 
+# TTS voice ("auto" = best installed: Premium > Samantha > Aman/Tara/Daniel).
+# Override after installing Premium voices, e.g. TTS_VOICE="Ava (Premium)".
+TTS_VOICE = os.getenv("TTS_VOICE", "auto")
+
 # Conversation
 MAX_HISTORY_TURNS = 10     # how many previous user/assistant turns the LLM sees
 SPOKEN_WORD_LIMIT = 90     # interviewer replies stay short enough to be spoken

@@ -17,10 +17,15 @@ session doubles as project-revision.
 | **Behavioral (STAR)** | 12 behavioral questions, coaches you toward Situation-Task-Action-Result |
 | **Daily English chat** | Free-flowing conversation for daily spoken-English practice |
 
-Every reply is **spoken** (browser TTS). Live filler-word counter
-(um/uh/basically/like…). Click **End & feedback** for a coach report:
-score /10, strengths, improvements, best & weakest answer, one concrete
-next focus. Transcripts save to `transcripts/`.
+Every reply is **spoken in a natural macOS voice** (Samantha by default;
+server-side `say` → WAV, with the browser voice as fallback). Live
+filler-word counter (um/uh/basically/like…). Click **End & feedback** for a
+coach report: score /10, strengths, improvements, best & weakest answer,
+one concrete next focus. Transcripts save to `transcripts/`.
+
+**Switching modes is instant** — change the dropdown and a fresh session
+starts in that mode right away (the old one is dropped). No page refresh,
+ever.
 
 ## Run it
 
@@ -85,4 +90,10 @@ follow-up. Deterministic control, natural conversation.
   are disabled via Ollama's `think: false` (53 s → 1.7 s per reply).
 - **Connection refused** → `python server.py` not running, or Ollama app
   closed. Check `/api/health`.
-- Want a different voice/model → see `.env.example` (gemma4:26b works too).
+- Want a different voice → see `.env.example`:
+  - `TTS_VOICE=Aman` or `TTS_VOICE=Tara` for Indian-English accents
+  - **Best quality (recommended):** install Premium voices once — System
+    Settings → Accessibility → Spoken Content → System Voice → Manage
+    Voices → download **Ava (Premium)** / **Zoe (Premium)** — then set
+    `TTS_VOICE="Ava (Premium)"`. Genuinely human-sounding, still offline.
+  - The app auto-picks the best installed voice when `TTS_VOICE=auto`.

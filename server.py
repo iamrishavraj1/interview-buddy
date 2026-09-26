@@ -22,12 +22,13 @@ from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import config
 import stt
+import tts
 from llm import chat, extract_json
 from prompts import feedback_system, interviewer_system
 from questions import DAILY_STARTERS
@@ -83,6 +84,7 @@ def start(body: StartRequest) -> dict:
     s.add_assistant(spoken)
     SESSIONS[s.id] = s
     return {"session_id": s.id, "reply": spoken, "quick_feedback": "",
+            "audio_url": tts.synth(spoken),
             "question_number": 1 if first_q else 0,
             "total_questions": s.total_questions}
 
@@ -104,9 +106,10 @@ def answer(session_id: str = Form(...), audio: UploadFile = File(...)) -> JSONRe
         Path(tmp.name).unlink(missing_ok=True)
 
     if not transcript:
+        missed = "Sorry, I didn't catch that — say it again?"
         return JSONResponse({
-            "transcript": "", "reply": "Sorry, I didn't catch that — say it again?",
-            "quick_feedback": "", "followed_up": True,
+            "transcript": "", "reply": missed, "quick_feedback": "",
+            "audio_url": tts.synth(missed), "followed_up": True,
             "question_number": min(s.q_index + 1, s.total_questions),
             "total_questions": s.total_questions, "fillers": s.fillers,
         })
@@ -149,12 +152,32 @@ def answer(session_id: str = Form(...), audio: UploadFile = File(...)) -> JSONRe
 
     return JSONResponse({
         "transcript": transcript, "reply": spoken, "quick_feedback": quick,
+        "audio_url": tts.synth(spoken),
         "followed_up": followed_up,
         "question_number": min(s.q_index + 1, s.total_questions) if s.bank else 0,
         "total_questions": s.total_questions,
         "fillers": s.fillers,
         "finished": s.exhausted,
     })
+
+
+@app.post("/api/abandon")
+def abandon(session_id: str = Form(...)) -> dict:
+    """Drop a session without a coach report (mode switch / restart)."""
+    SESSIONS.pop(session_id, None)
+    return {"ok": True}
+
+
+@app.get("/tts/{name}")
+def tts_file(name: str) -> FileResponse:
+    """Serve a spoken reply. Name must be hex.wav — no path traversal."""
+    if not (len(name) == 32 + 4 and name.endswith(".wav")
+            and all(c in "0123456789abcdef" for c in name[:32])):
+        raise HTTPException(400, "bad tts name")
+    path = Path(__file__).parent / "tts_cache" / name
+    if not path.exists():
+        raise HTTPException(404, "expired or missing")
+    return FileResponse(path, media_type="audio/wav")
 
 
 @app.post("/api/feedback")

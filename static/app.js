@@ -13,9 +13,25 @@ let recorder = null;
 let audioChunks = [];
 let ttsOn = true;
 let busy = false;
+let currentAudio = null;      // server-generated WAV (macOS `say` voice)
+let lastMode = $("mode").value;
 
 /* ---------- tiny helpers ---------- */
 function scrollDown() { chat.scrollTop = chat.scrollHeight; }
+
+function stopAudio() {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+}
+
+function clearChat() {
+  chat.innerHTML = "";
+  $("report").innerHTML = "<p style='color:var(--dim);font-size:13px'>Ends the session and shows feedback here.</p>";
+  $("saved").textContent = "";
+  $("qNow").textContent = "0"; $("turns").textContent = "0";
+  $("fillerTotal").textContent = "0";
+  $("fillers").textContent = "None yet — keep talking.";
+}
 
 function bubble(kind, text) {
   const div = document.createElement("div");
@@ -37,9 +53,19 @@ function quickNote(text) {
 
 function showError(msg) { $("err").textContent = msg || ""; }
 
-function speak(text) {
-  if (!ttsOn || !("speechSynthesis" in window)) return;
-  speechSynthesis.cancel();                       // stop any earlier reply
+function speakReply(audioUrl, text) {
+  if (!ttsOn) return;
+  stopAudio();
+  if (audioUrl) {                       // macOS `say` WAV — the good voice
+    currentAudio = new Audio(audioUrl);
+    currentAudio.play().catch(() => speakFallback(text));
+  } else {
+    speakFallback(text);
+  }
+}
+
+function speakFallback(text) {          // browser voice (backup)
+  if (!("speechSynthesis" in window)) return;
   const u = new SpeechSynthesisUtterance(text);
   u.rate = 1.0;
   const voices = speechSynthesis.getVoices();
@@ -53,6 +79,8 @@ function speak(text) {
 async function startSession() {
   $("gateErr").textContent = "";
   $("startBtn").disabled = true;
+  clearChat();
+  stopAudio();
   try {
     const r = await fetch("/api/start", {
       method: "POST",
@@ -62,10 +90,11 @@ async function startSession() {
     if (!r.ok) throw new Error("server said " + r.status);
     const data = await r.json();
     sessionId = data.session_id;
+    lastMode = $("mode").value;
     $("qTot").textContent = data.total_questions || "–";
     bubble("system", "Session started — " + $("mode").selectedOptions[0].text);
     bubble("buddy", data.reply);
-    speak(data.reply);
+    speakReply(data.audio_url, data.reply);
     $("gate").style.display = "none";
     $("endBtn").disabled = false;
   } catch (e) {
@@ -75,10 +104,30 @@ async function startSession() {
   $("startBtn").disabled = false;
 }
 
+/* Mode dropdown: switching abandons the current session and starts the
+ * newly selected mode immediately — no page refresh needed. */
+$("mode").addEventListener("change", async () => {
+  if (busy || recording) {                     // finish the current answer first
+    $("mode").value = lastMode;
+    showError("Finish or stop the current answer first.");
+    return;
+  }
+  showError("");
+  stopAudio();
+  if (sessionId) {
+    const fd = new FormData();
+    fd.append("session_id", sessionId);
+    await fetch("/api/abandon", { method: "POST", body: fd }).catch(() => {});
+    sessionId = null;
+  }
+  $("endBtn").disabled = true;
+  await startSession();
+});
+
 async function endSession() {
   if (!sessionId || busy) return;
   busy = true; $("endBtn").disabled = true; $("mic").disabled = true;
-  speechSynthesis.cancel();
+  stopAudio();
   bubble("system", "Wrapping up… building your coach report.");
   try {
     const fd = new FormData();
@@ -88,7 +137,9 @@ async function endSession() {
     const { report, stats, transcript_file } = await r.json();
     renderReport(report, stats, transcript_file);
     sessionId = null;
-    $("micLabel").textContent = "Session over — refresh the page for a new one";
+    $("micLabel").textContent = "Pick a mode and press Start for a new session";
+    $("gate").style.display = "flex";       // ready for the next round
+    $("gateHeading").textContent = "Practice again?";
   } catch (e) {
     showError("Feedback failed: " + e.message);
     $("endBtn").disabled = false;
@@ -139,7 +190,7 @@ async function toggleMic() {
     $("mic").classList.add("rec");
     $("mic").textContent = "⏹";
     $("micLabel").textContent = "Recording… click again to send";
-    speechSynthesis.cancel();                      // don't talk over you
+    stopAudio();                      // don't talk over you
   } catch (e) {
     showError("Mic blocked — allow microphone for localhost in Chrome settings.");
   }
@@ -159,7 +210,7 @@ async function sendAudio(blob) {
     if (data.transcript) bubble("you", data.transcript);
     bubble("buddy", data.reply);
     quickNote(data.quick_feedback);
-    speak(data.reply);
+    speakReply(data.audio_url, data.reply);
     $("turns").textContent = data.transcript
       ? Number($("turns").textContent) + 1 : $("turns").textContent;
     $("qNow").textContent = data.question_number ?? 0;
@@ -199,6 +250,6 @@ $("mic").onclick = toggleMic;
 $("endBtn").onclick = endSession;
 $("ttsToggle").onclick = () => {
   ttsOn = !ttsOn;
-  if (!ttsOn) speechSynthesis.cancel();
+  stopAudio();
   $("ttsToggle").textContent = ttsOn ? "🔊 Voice: on" : "🔇 Voice: off";
 };

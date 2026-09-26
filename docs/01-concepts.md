@@ -116,16 +116,26 @@ interpreted by the feedback stage.
 Sessions live in an in-memory dict — honest for a single-user local app.
 Making them durable (SQLite) is exercise 1 in the build guide.
 
-## 7. Speaking replies: browser TTS
+## 7. Speaking replies: server-side `say` with browser fallback
 
-`speechSynthesis` is built into every browser: create an
-`SpeechSynthesisUtterance`, pick an English voice from `getVoices()`
-(loaded async — we warm the list at startup), set `rate`, `speak()`.
-We `cancel()` before each new reply so the buddy never talks over you, and
-before recording starts so it never talks into its own transcript.
+v1 used the browser's `speechSynthesis` — free and instant, but the default
+voice sounds robotic. Final design: the **server speaks first, browser is
+the fallback**.
 
-Zero backend cost, zero latency, works offline — vs cloud TTS (better
-voices, ₹ per character). v1 picks the free one; switching is one function.
+`tts.py` picks the best installed macOS voice (Premium voices if present,
+else Samantha/Aman/Tara/Daniel — config via `TTS_VOICE`), runs the `say`
+CLI to synthesize a **WAV** (`--data-format=LEI16@22050`), and serves it
+from `tts_cache/` at `/tts/<hex>.wav` (name validated against path
+traversal; old files cleaned up after an hour). The API responses now carry
+an `audio_url`; the frontend plays it with `new Audio(url)` and only falls
+back to `speechSynthesis` if synthesis failed. Either way we `cancel()`
+before speaking so the buddy never talks over you, and before recording so
+it never transcribes itself.
+
+Cost: zero, offline, ~0.2 s per reply. Quality jumps hugely if you install
+Premium voices once in System Settings (Accessibility → Spoken Content) —
+this is the same trade-off fin-research-agent makes with local vs cloud
+models: config-level swap, code unchanged.
 
 ## 8. FastAPI shape (and why sync, not async)
 
