@@ -11,7 +11,7 @@ Design decisions worth noticing:
   (keeps spoken replies snappy). Any <think> that slips through is stripped
   in llm.py anyway.
 """
-from speakloop.config import SPOKEN_WORD_LIMIT
+from looptalk.config import SPOKEN_WORD_LIMIT
 
 JSON_CONTRACT = """
 Response format — reply with ONLY this JSON object, no markdown fences,

@@ -1,3 +1,47 @@
+Metadata-Version: 2.4
+Name: looptalk
+Version: 1.0.0
+Summary: Local, free, cross-platform AI speaking coach — mock interviews, behavioral practice, spoken English
+Author-email: Rishav Raj <iamrishavraj1@gmail.com>
+License: Copyright (c) 2026 Rishav Raj. All rights reserved.
+        
+        This source code is made publicly visible for learning, evaluation and
+        demonstration purposes only.
+        
+        PERMISSION GRANTED
+        You may view, read and study this repository for personal,
+        non-commercial purposes.
+        
+        YOU MAY NOT
+        - Copy, clone, redistribute, republish or resell this code or any
+          substantial part of it
+        - Use this code, in whole or in part, in your own projects, products,
+          client work, or training material without written permission
+        - Present this code or its output as your own work
+        - Remove or alter this notice
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+        EXPRESS OR IMPLIED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+        CLAIM, DAMAGES OR OTHER LIABILITY.
+        
+        For commercial licensing, collaboration or permission requests:
+        iamrishavraj1@gmail.com
+        
+Project-URL: Repository, https://github.com/iamrishavraj1/looptalk
+Project-URL: Homepage, https://iamrishavraj1.com
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: faster-whisper>=1.0
+Requires-Dist: fastapi>=0.111
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: python-multipart>=0.0.9
+Requires-Dist: httpx>=0.27
+Provides-Extra: dev
+Requires-Dist: pytest>=8.2; extra == "dev"
+Requires-Dist: httpx; extra == "dev"
+Dynamic: license-file
+
 # 🎙️ LoopTalk
 
 ![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white) ![Runs%20offline](https://img.shields.io/badge/Runs-100%25%20offline-teal?style=flat-square)

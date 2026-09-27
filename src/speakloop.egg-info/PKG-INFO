@@ -1,5 +1,5 @@
 Metadata-Version: 2.4
-Name: speakloop
+Name: looptalk
 Version: 1.0.0
 Summary: Local, free, cross-platform AI speaking coach — mock interviews, behavioral practice, spoken English
 Author-email: Rishav Raj <iamrishavraj1@gmail.com>
@@ -27,7 +27,7 @@ License: Copyright (c) 2026 Rishav Raj. All rights reserved.
         For commercial licensing, collaboration or permission requests:
         iamrishavraj1@gmail.com
         
-Project-URL: Repository, https://github.com/iamrishavraj1/speakloop
+Project-URL: Repository, https://github.com/iamrishavraj1/looptalk
 Project-URL: Homepage, https://iamrishavraj1.com
 Requires-Python: >=3.11
 Description-Content-Type: text/markdown
@@ -42,7 +42,7 @@ Requires-Dist: pytest>=8.2; extra == "dev"
 Requires-Dist: httpx; extra == "dev"
 Dynamic: license-file
 
-# 🎙️ SpeakLoop
+# 🎙️ LoopTalk
 
 ![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white) ![Runs%20offline](https://img.shields.io/badge/Runs-100%25%20offline-teal?style=flat-square)
 
@@ -85,8 +85,8 @@ engine runs locally on every OS.
 Change the voice live from the in-app picker, or set `TTS_VOICE` in `.env` (see `.env.example`).
 
 ```bash
-git clone https://github.com/iamrishavraj1/speakloop.git
-cd speakloop
+git clone https://github.com/iamrishavraj1/looptalk.git
+cd looptalk
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python server.py

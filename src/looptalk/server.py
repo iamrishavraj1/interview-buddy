@@ -1,4 +1,4 @@
-"""SpeakLoop — FastAPI backend.
+"""LoopTalk — FastAPI backend.
 
 Run:  python server.py     →  http://localhost:8001
 
@@ -26,14 +26,14 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from speakloop import config
-from speakloop import stt
-from speakloop import tts
-from speakloop.llm import chat, extract_json
-from speakloop.prompts import feedback_system, interviewer_system
-from speakloop.questions import DAILY_STARTERS
-from speakloop.session import SESSIONS, Session, get
-from speakloop.stt import transcribe
+from looptalk import config
+from looptalk import stt
+from looptalk import tts
+from looptalk.llm import chat, extract_json
+from looptalk.prompts import feedback_system, interviewer_system
+from looptalk.questions import DAILY_STARTERS
+from looptalk.session import SESSIONS, Session, get
+from looptalk.stt import transcribe
 
 
 @asynccontextmanager
@@ -44,7 +44,7 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="SpeakLoop", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="LoopTalk", version="1.0.0", lifespan=lifespan)
 
 OPENINGS = {
     "interview": ("Hi! I'm Loop. We'll go through {n} questions, and you answer "
