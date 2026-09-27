@@ -3,7 +3,7 @@
 Kept import-light: whisper loads lazily, so importing the server does not
 pull the model into memory.
 """
-from speakloop import config, questions
+from looptalk import config, questions
 
 
 def test_config_defaults():
@@ -19,7 +19,7 @@ def test_question_banks_nonempty():
 
 
 def test_app_routes():
-    from speakloop.server import app
+    from looptalk.server import app
 
     names = {getattr(r, "name", "") for r in app.routes}
     paths = {getattr(r, "path", "") for r in app.routes}
