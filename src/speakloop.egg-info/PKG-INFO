@@ -1,3 +1,47 @@
+Metadata-Version: 2.4
+Name: speakloop
+Version: 1.0.0
+Summary: Local, free, cross-platform AI speaking coach — mock interviews, behavioral practice, spoken English
+Author-email: Rishav Raj <iamrishavraj1@gmail.com>
+License: Copyright (c) 2026 Rishav Raj. All rights reserved.
+        
+        This source code is made publicly visible for learning, evaluation and
+        demonstration purposes only.
+        
+        PERMISSION GRANTED
+        You may view, read and study this repository for personal,
+        non-commercial purposes.
+        
+        YOU MAY NOT
+        - Copy, clone, redistribute, republish or resell this code or any
+          substantial part of it
+        - Use this code, in whole or in part, in your own projects, products,
+          client work, or training material without written permission
+        - Present this code or its output as your own work
+        - Remove or alter this notice
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+        EXPRESS OR IMPLIED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+        CLAIM, DAMAGES OR OTHER LIABILITY.
+        
+        For commercial licensing, collaboration or permission requests:
+        iamrishavraj1@gmail.com
+        
+Project-URL: Repository, https://github.com/iamrishavraj1/speakloop
+Project-URL: Homepage, https://iamrishavraj1.com
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: faster-whisper>=1.0
+Requires-Dist: fastapi>=0.111
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: python-multipart>=0.0.9
+Requires-Dist: httpx>=0.27
+Provides-Extra: dev
+Requires-Dist: pytest>=8.2; extra == "dev"
+Requires-Dist: httpx; extra == "dev"
+Dynamic: license-file
+
 # 🎙️ SpeakLoop
 
 ![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white) ![Runs%20offline](https://img.shields.io/badge/Runs-100%25%20offline-teal?style=flat-square)
@@ -44,8 +88,8 @@ Change the voice live from the in-app picker, or set `TTS_VOICE` in `.env` (see 
 git clone https://github.com/iamrishavraj1/speakloop.git
 cd speakloop
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e .
-python -m speakloop.server
+pip install -r requirements.txt
+python server.py
 open http://localhost:8001
 ```
 
@@ -88,13 +132,11 @@ Chrome (localhost:8001)                    FastAPI (server.py)
 |---|---|
 | `docs/01-concepts.md` | **Every concept**: STT, quantization, LLM serving, prompt design, session state, MediaRecorder, TTS, FastAPI |
 | `docs/02-build-guide.md` | **Build it yourself** — 7 steps with acceptance checks, if you want to rebuild from scratch to learn |
-| `src/speakloop/server.py` | FastAPI app: API surface, control-note pattern, graceful degradation |
-| `src/speakloop/session.py` | State, question progression, filler analytics, transcript saving |
-| `src/speakloop/prompts.py` | Interviewer persona, spoken-style constraints, JSON contract |
-| `src/speakloop/stt.py` / `llm.py` | whisper wrapper / Ollama client with think-stripping |
-| `src/speakloop/tts.py` | cross-platform TTS: macOS `say` / Windows SAPI / Linux espeak-ng |
+| `server.py` | API surface, control-note pattern, graceful degradation |
+| `session.py` | State, question progression, filler analytics, transcript saving |
+| `prompts.py` | Interviewer persona, spoken-style constraints, JSON contract |
+| `stt.py` / `llm.py` | whisper wrapper / Ollama client with think-stripping |
 | `static/app.js` | MediaRecorder, speechSynthesis, UI state machine |
-| `tests/` | smoke tests (config, question banks, routes) |
 
 ## Troubleshooting
 
@@ -114,18 +156,6 @@ Chrome (localhost:8001)                    FastAPI (server.py)
     Voices → download **Ava (Premium)** / **Zoe (Premium)** — then set
     `TTS_VOICE="Ava (Premium)"`. Genuinely human-sounding, still offline.
   - The app auto-picks the best installed voice when `TTS_VOICE=auto`.
-
-## Project structure
-
-```
-speakloop/
-├── src/speakloop/        # the app (config, server, stt, llm, tts, session, prompts)
-├── static/               # frontend (index.html, app.js)
-├── docs/                 # concept + build guides
-├── tests/                # smoke tests (pytest)
-├── pyproject.toml        # package metadata, deps, dev extras
-└── requirements.txt      # plain runtime deps (pip install -r users)
-```
 
 ## License
 

@@ -7,7 +7,7 @@ acceptance check: don't move on until it passes.
 
 **Setup:** empty folder `~/Documents/buddy-own/`, `python3 -m venv .venv`,
 `pip install faster-whisper fastapi uvicorn[standard] python-multipart openai`,
-Ollama running, and copy `questions.py` from this repo (content, not skill).
+Ollama running, and copy `src/speakloop/questions.py` from this repo (content, not skill).
 
 ---
 

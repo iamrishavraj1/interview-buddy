@@ -21,6 +21,7 @@ def test_question_banks_nonempty():
 def test_app_routes():
     from speakloop.server import app
 
+    names = {getattr(r, "name", "") for r in app.routes}
     paths = {getattr(r, "path", "") for r in app.routes}
-    assert "/" in paths            # static frontend mounted
-    assert "/api/health" in paths  # health endpoint
+    assert "static" in names          # static frontend mounted
+    assert "/api/health" in paths     # health endpoint
