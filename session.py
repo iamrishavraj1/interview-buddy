@@ -36,6 +36,8 @@ class Session:
         self.bank = BANKS.get(mode)
         self.q_index = 0                 # which bank question is "active"
         self.current_question: str | None = None
+        self.attempts = 0                # tries on the CURRENT question
+        self.retry_count = 0             # coaching retries in the session
         self.pairs: list[dict] = []      # {"question": ..., "answer": ...}
         self.history: list[dict] = []    # {"role": ..., "content": ...}
         self.fillers: dict[str, int] = {}
@@ -51,6 +53,7 @@ class Session:
         return self.bank is not None and self.q_index >= len(self.bank)
 
     def activate_next_question(self) -> str | None:
+        self.attempts = 0
         if self.bank is None:  # daily mode has no bank
             return None
         self.current_question = None if self.exhausted else self.bank[self.q_index]
@@ -58,14 +61,16 @@ class Session:
 
     def advance(self) -> None:
         """Move to the next bank question (called when the LLM didn't
-        follow up). Daily mode never advances."""
+        follow up or retry). Daily mode never advances."""
         if self.bank is not None:
             self.q_index += 1
+            self.attempts = 0
 
     # ---- conversation bookkeeping ---------------------------------------
     def add_user(self, text: str) -> None:
         self.history.append({"role": "user", "content": text})
         self.pairs.append({"question": self.current_question, "answer": text})
+        self.attempts += 1
         low = text.lower()
         for m in _WORD_FILLERS.findall(low):
             self.fillers[m] = self.fillers.get(m, 0) + 1
@@ -79,8 +84,9 @@ class Session:
 
     def llm_messages(self, latest_transcript: str, note: str) -> list[dict]:
         """Build the request: older turns (trimmed) + a final user message
-        holding the latest answer plus the server's control note."""
-        older = self.history[:-1][-2 * MAX_HISTORY_TURNS:]
+        holding the latest answer plus the server's control note.
+        (add_user runs AFTER this call, so full history = genuinely older.)"""
+        older = self.history[-2 * MAX_HISTORY_TURNS:]
         combined = f"Candidate just said: \"{latest_transcript}\"\n\n{note}"
         return [*older, {"role": "user", "content": combined}]
 
@@ -100,6 +106,7 @@ class Session:
             "questions_asked": min(self.q_index + (0 if self.exhausted else 1),
                                    self.total_questions) if self.bank else 0,
             "total_questions": self.total_questions,
+            "coaching_retries": self.retry_count,
             "fillers": dict(sorted(self.fillers.items(),
                                    key=lambda kv: -kv[1])),
             "duration_min": round((time.time() - self.started) / 60, 1),

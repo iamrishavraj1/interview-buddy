@@ -48,6 +48,17 @@
                   border: 1px solid var(--line); border-bottom-left-radius: 4px; }
   .quick { align-self: flex-start; max-width: 72%; font-size: 13px;
            color: var(--warn); padding: 0 6px; margin-top: -6px; }
+  .correction {
+    align-self: flex-start; max-width: 78%; margin-top: 2px;
+    background: rgba(74,222,128,.08); border: 1px solid var(--good);
+    border-left: 4px solid var(--good); border-radius: 12px;
+    padding: 10px 14px; font-size: 14px; line-height: 1.5;
+  }
+  .correction b { color: var(--good); }
+  .retrychip {
+    align-self: flex-start; font-size: 12px; color: var(--warn);
+    padding: 0 6px; margin-top: -4px;
+  }
   .hint { align-self: center; color: var(--dim); font-size: 13px; text-align: center; }
   .bubble.system { align-self: center; background: none; color: var(--dim); font-size: 13px; }
 
@@ -116,6 +127,9 @@
     <option value="interview">Interview — AI Engineer</option>
     <option value="behavioral">Behavioral (STAR)</option>
     <option value="daily">Daily English chat</option>
+  </select>
+  <select id="voice" title="Buddy's speaking voice">
+    <option disabled>Voice…</option>
   </select>
   <div class="spacer"></div>
   <button class="ghost" id="ttsToggle">🔊 Voice: on</button>

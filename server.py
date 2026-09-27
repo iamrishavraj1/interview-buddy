@@ -59,6 +59,13 @@ OPENINGS = {
 
 class StartRequest(BaseModel):
     mode: str  # "interview" | "behavioral" | "daily"
+    voice: str | None = None  # picker choice; None = auto (Indian first)
+
+
+@app.get("/api/voices")
+def voices() -> dict:
+    """English voices for the UI picker + which one is the default."""
+    return {"voices": tts.english_voices(), "default": tts.pick_voice()}
 
 
 @app.get("/api/health")
@@ -84,13 +91,14 @@ def start(body: StartRequest) -> dict:
     s.add_assistant(spoken)
     SESSIONS[s.id] = s
     return {"session_id": s.id, "reply": spoken, "quick_feedback": "",
-            "audio_url": tts.synth(spoken),
+            "audio_url": tts.synth(spoken, body.voice),
             "question_number": 1 if first_q else 0,
             "total_questions": s.total_questions}
 
 
 @app.post("/api/answer")
-def answer(session_id: str = Form(...), audio: UploadFile = File(...)) -> JSONResponse:
+def answer(session_id: str = Form(...), audio: UploadFile = File(...),
+           voice: str | None = Form(None)) -> JSONResponse:
     s = get(session_id)
     if s is None:
         raise HTTPException(404, "session not found — start a new session")
@@ -109,51 +117,75 @@ def answer(session_id: str = Form(...), audio: UploadFile = File(...)) -> JSONRe
         missed = "Sorry, I didn't catch that — say it again?"
         return JSONResponse({
             "transcript": "", "reply": missed, "quick_feedback": "",
-            "audio_url": tts.synth(missed), "followed_up": True,
+            "audio_url": tts.synth(missed, voice), "followed_up": True,
             "question_number": min(s.q_index + 1, s.total_questions),
             "total_questions": s.total_questions, "fillers": s.fillers,
         })
 
     # 2) LLM turn — server keeps control of progression via the control note.
+    max_attempts = config.RETRY_LIMIT + 1
     next_q = "the question bank is finished — wrap up warmly" if s.exhausted \
         else repr(s.bank[s.q_index] if s.bank else None)
+    if s.attempts >= max_attempts:
+        retry_policy = (f"This was attempt {s.attempts} of {max_attempts} — the "
+                        f"retry limit is reached: retry MUST be false. Speak the "
+                        f"corrected version yourself, briefly praise the effort, "
+                        f"then move to the next question.")
+    else:
+        retry_policy = (
+            f"This is attempt {s.attempts} of {max_attempts} for this question. "
+            f"If the answer has a correctable language/structure mistake: set "
+            f"retry=true, correct ONE thing in 'correction', and ask them to say "
+            f"it again. If it is clean (or the retry improved it): retry=false.")
     note = (
         f"[SERVER NOTE — not to be read aloud]\n"
         f"Current question: {s.current_question or '(free conversation — keep it going)'}\n"
         f"Next bank question: {next_q}\n"
-        f"Decide: ask ONE follow-up on the same question (followed_up=true) if the "
-        f"answer lacks depth, specifics or a result — otherwise move on "
-        f"(followed_up=false). If your 'spoken' ends with a question about this "
-        f"same answer, followed_up MUST be true."
+        f"{retry_policy}\n"
+        f"If your 'spoken' ends with a question about this same answer, "
+        f"followed_up MUST be true (unless retry=true)."
     )
 
     def llm_turn() -> str:
         return chat(interviewer_system(s.mode),
                     s.llm_messages(transcript, note), temperature=0.7)
 
-    def parse(raw: str) -> tuple[str, str, bool]:
+    def parse(raw: str) -> tuple[str, str, bool, bool, str]:
         try:
             data = extract_json(raw)
-            return (str(data.get("spoken") or ""), str(data.get("quick_feedback") or ""),
-                    bool(data.get("followed_up")))
+            return (str(data.get("spoken") or ""),
+                    str(data.get("quick_feedback") or ""),
+                    bool(data.get("followed_up")),
+                    bool(data.get("retry")),
+                    str(data.get("correction") or ""))
         except (ValueError, TypeError):  # model broke the contract — degrade nicely
-            return raw[:600], "", False
+            return raw[:600], "", False, False, ""
 
-    spoken, quick, followed_up = parse(llm_turn())
+    spoken, quick, followed_up, retry, correction = parse(llm_turn())
     if not spoken.strip():            # rare Ollama hiccup: one retry, then a canned line
-        spoken, quick, followed_up = parse(llm_turn())
+        spoken, quick, followed_up, retry, correction = parse(llm_turn())
     if not spoken.strip():
-        spoken, quick, followed_up = "Could you go a bit deeper on that?", "", True
+        spoken = "Could you go a bit deeper on that?"
+        quick, followed_up, retry, correction = "", True, False, ""
 
     s.add_user(transcript)
     s.add_assistant(spoken)
-    if not followed_up:
-        s.advance()
+    if retry and s.attempts < max_attempts:
+        # Learning loop: stay on the same question so they try again.
+        s.retry_count += 1
+        retry = True
+    else:
+        retry = False                 # limit reached or answer accepted
+        correction = correction if not followed_up else ""
+        if not followed_up:
+            s.advance()
 
     return JSONResponse({
         "transcript": transcript, "reply": spoken, "quick_feedback": quick,
-        "audio_url": tts.synth(spoken),
-        "followed_up": followed_up,
+        "audio_url": tts.synth(spoken, voice),
+        "followed_up": followed_up, "retry": retry,
+        "correction": correction, "attempt": s.attempts,
+        "max_attempts": max_attempts,
         "question_number": min(s.q_index + 1, s.total_questions) if s.bank else 0,
         "total_questions": s.total_questions,
         "fillers": s.fillers,

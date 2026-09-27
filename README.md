@@ -1,13 +1,8 @@
 # 🎙️ Interview Buddy
 
-A **local, free, speaking** interview-prep webapp. It asks you questions
-**out loud**, listens to your spoken answers, and coaches you — everything
-runs on your Mac (Ollama qwen3:14b + faster-whisper + browser speech), so
-practice costs ₹0 and works offline.
-
-Built for Rishav's AI-engineer transition (Sep 2026) — the question banks
-mirror his `fin-research-agent` interview syllabus, so every practice
-session doubles as project-revision.
+A **local, free, speaking** mock-interview coach. It asks questions **out loud**,
+listens to your spoken answers, and coaches you — everything runs on your Mac
+(Ollama + faster-whisper + macOS voices), so practice costs ₹0 and works offline.
 
 ## What it does
 
@@ -17,34 +12,32 @@ session doubles as project-revision.
 | **Behavioral (STAR)** | 12 behavioral questions, coaches you toward Situation-Task-Action-Result |
 | **Daily English chat** | Free-flowing conversation for daily spoken-English practice |
 
-Every reply is **spoken in a natural macOS voice** (Samantha by default;
-server-side `say` → WAV, with the browser voice as fallback). Live
-filler-word counter (um/uh/basically/like…). Click **End & feedback** for a
-coach report: score /10, strengths, improvements, best & weakest answer,
-one concrete next focus. Transcripts save to `transcripts/`.
+Every reply is **spoken in a natural macOS voice** (server-side `say` → WAV, with
+the browser voice as fallback; Premium voices supported). Live **filler-word
+counter** (um/uh/basically/like…). Click **End & feedback** for a coach report:
+score /10, strengths, improvements, best & weakest answer, one concrete next
+focus. Transcripts save to `transcripts/`.
 
-**Switching modes is instant** — change the dropdown and a fresh session
-starts in that mode right away (the old one is dropped). No page refresh,
-ever.
+**Switching modes is instant** — change the dropdown and a fresh session starts
+in that mode right away (the old one is dropped). No page refresh, ever.
 
-## Run it
+## How to run
 
-Prereqs (already true on this machine): Ollama app running with
-`qwen3:14b` pulled, Python 3.11+.
+Prerequisites: [Ollama](https://ollama.com) with `qwen3:14b` pulled,
+Python 3.11+, Chrome (for microphone access).
 
 ```bash
-cd ~/Documents/interview-buddy
-source .venv/bin/activate        # if you already created it, else:
-# python3 -m venv .venv && source .venv/bin/activate
-# pip install -r requirements.txt
-
+git clone https://github.com/iamrishavraj1/interview-buddy.git
+cd interview-buddy
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 python server.py
 open http://localhost:8001
 ```
 
-First click of **Start session** warms the models (~10 s the very first
-time; whisper stays loaded after). Allow the **microphone** when Chrome
-asks. Then: mic → answer out loud → mic again → Buddy speaks back.
+First click of **Start session** warms the models (~10 s the very first time;
+whisper stays loaded after). Allow the **microphone** when Chrome asks. Then:
+mic → answer out loud → mic again → Buddy speaks back.
 
 ## Architecture
 
@@ -63,9 +56,17 @@ Chrome (localhost:8001)                    FastAPI (server.py)
                                            └───────────────────────────┘
 ```
 
-The **server** decides which question is active and when to move on; the
-LLM only polishes language, gives quick feedback, and may ask ONE
-follow-up. Deterministic control, natural conversation.
+## Design notes
+
+- **Deterministic control, natural conversation** — the server decides which
+  question is active and when to move on; the LLM only polishes language, gives
+  quick feedback, and may ask ONE follow-up. Sessions stay on rails while
+  feeling free-form.
+- **Latency** — qwen3's hidden "thinking" tokens are disabled via Ollama's
+  native API (`think: false`): 53 s → 1.7 s per reply. Whisper pre-warms at
+  startup; steady-state turns take ~2–4 s.
+- **Structured output** — replies follow a JSON contract (feedback + optional
+  follow-up), with double-encoded-JSON unwrapping and empty-reply retries.
 
 ## Repo tour
 
@@ -90,10 +91,14 @@ follow-up. Deterministic control, natural conversation.
   are disabled via Ollama's `think: false` (53 s → 1.7 s per reply).
 - **Connection refused** → `python server.py` not running, or Ollama app
   closed. Check `/api/health`.
-- Want a different voice → see `.env.example`:
+- **Different voice** → see `.env.example`:
   - `TTS_VOICE=Aman` or `TTS_VOICE=Tara` for Indian-English accents
   - **Best quality (recommended):** install Premium voices once — System
     Settings → Accessibility → Spoken Content → System Voice → Manage
     Voices → download **Ava (Premium)** / **Zoe (Premium)** — then set
     `TTS_VOICE="Ava (Premium)"`. Genuinely human-sounding, still offline.
   - The app auto-picks the best installed voice when `TTS_VOICE=auto`.
+
+---
+
+*Contact: [iamrishavraj1@gmail.com](mailto:iamrishavraj1@gmail.com) · [iamrishavraj1.com](https://iamrishavraj1.com)*

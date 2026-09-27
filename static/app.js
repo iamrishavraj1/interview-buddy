@@ -51,6 +51,20 @@ function quickNote(text) {
   scrollDown();
 }
 
+/* Coaching loop: buddy found a mistake and asked for another try. */
+function correctionCard(text, attempt, max) {
+  const div = document.createElement("div");
+  div.className = "correction";
+  div.innerHTML = `<b>📝 Say it like this:</b> `;
+  div.appendChild(document.createTextNode(text));
+  chat.appendChild(div);
+  const chip = document.createElement("div");
+  chip.className = "retrychip";
+  chip.textContent = `🔁 Your turn — try again (attempt ${attempt + 1} of ${max})`;
+  chat.appendChild(chip);
+  scrollDown();
+}
+
 function showError(msg) { $("err").textContent = msg || ""; }
 
 function speakReply(audioUrl, text) {
@@ -85,7 +99,7 @@ async function startSession() {
     const r = await fetch("/api/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: $("mode").value }),
+      body: JSON.stringify({ mode: $("mode").value, voice: $("voice").value }),
     });
     if (!r.ok) throw new Error("server said " + r.status);
     const data = await r.json();
@@ -203,21 +217,28 @@ async function sendAudio(blob) {
     const fd = new FormData();
     fd.append("session_id", sessionId);
     fd.append("audio", blob, "answer.webm");
+    fd.append("voice", $("voice").value);
     const r = await fetch("/api/answer", { method: "POST", body: fd });
     if (!r.ok) throw new Error("server said " + r.status);
     const data = await r.json();
 
     if (data.transcript) bubble("you", data.transcript);
     bubble("buddy", data.reply);
-    quickNote(data.quick_feedback);
+    if (data.retry && data.correction) {
+      correctionCard(data.correction, data.attempt, data.max_attempts);
+      $("micLabel").textContent =
+        `🔁 Try again — say it better (attempt ${data.attempt + 1} of ${data.max_attempts})`;
+    } else {
+      quickNote(data.quick_feedback);
+      $("micLabel").textContent = data.finished
+        ? "Bank finished — hit “End & feedback”"
+        : "Click the mic, answer out loud, click again to send";
+    }
     speakReply(data.audio_url, data.reply);
     $("turns").textContent = data.transcript
       ? Number($("turns").textContent) + 1 : $("turns").textContent;
     $("qNow").textContent = data.question_number ?? 0;
     updateFillers(data.fillers);
-    $("micLabel").textContent = data.finished
-      ? "Bank finished — hit “End & feedback”"
-      : "Click the mic, answer out loud, click again to send";
   } catch (e) {
     showError("Send failed: " + e.message);
     $("micLabel").textContent = "Click the mic to try again";
@@ -235,8 +256,34 @@ function updateFillers(f) {
     : "None — clean speaking!";
 }
 
+/* ---------- voice picker (macOS voices via server; Indian first) ---------- */
+async function loadVoices() {
+  try {
+    const r = await fetch("/api/voices");
+    if (!r.ok) return;
+    const { voices, default: def } = await r.json();
+    const sel = $("voice");
+    sel.innerHTML = "";
+    for (const v of voices) {
+      const opt = document.createElement("option");
+      opt.value = v.name;
+      opt.textContent = `${v.base || v.name} · ${v.label}`;
+      sel.appendChild(opt);
+    }
+    const saved = localStorage.getItem("ib-voice");
+    sel.value = (saved && voices.some((v) => v.name === saved)) ? saved
+                                                             : (def || "Aman");
+  } catch (_) { /* picker stays a placeholder; synth falls back to auto */ }
+}
+
+$("voice").addEventListener("change", () => {
+  localStorage.setItem("ib-voice", $("voice").value);
+  showError("");
+});
+
 /* ---------- health check + wiring ---------- */
 (async () => {
+  loadVoices();
   try {
     const r = await fetch("/api/health");
     if (r.ok) $("healthDot").classList.add("ok");
