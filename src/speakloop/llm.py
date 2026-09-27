@@ -17,7 +17,7 @@ import re
 
 import httpx
 
-from config import OLLAMA_BASE_URL, OLLAMA_MODEL
+from speakloop.config import OLLAMA_BASE_URL, OLLAMA_MODEL
 
 # base_url arrives as http://localhost:11434/v1 -> native API lives at the root
 _ROOT = OLLAMA_BASE_URL.removesuffix("/v1")

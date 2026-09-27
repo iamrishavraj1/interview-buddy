@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "speakloop"
+version = "1.0.0"
+description = "Local, free, cross-platform AI speaking coach — mock interviews, behavioral practice, spoken English"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Rishav Raj", email = "iamrishavraj1@gmail.com" }]
+dependencies = [
+    "faster-whisper>=1.0",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.2", "httpx"]
+
+[project.urls]
+Repository = "https://github.com/iamrishavraj1/speakloop"
+Homepage = "https://iamrishavraj1.com"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -24,9 +24,9 @@ import time
 import uuid
 from pathlib import Path
 
-from config import TTS_VOICE
+from speakloop.config import PROJECT_ROOT, TTS_VOICE
 
-CACHE = Path(__file__).parent / "tts_cache"
+CACHE = PROJECT_ROOT / "tts_cache"
 CACHE.mkdir(exist_ok=True)
 
 if sys.platform == "darwin":

@@ -14,8 +14,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from questions import AI_ENGINEER, BEHAVIORAL, DAILY_STARTERS
-from config import MAX_HISTORY_TURNS
+from speakloop.questions import AI_ENGINEER, BEHAVIORAL, DAILY_STARTERS
+from speakloop.config import MAX_HISTORY_TURNS, PROJECT_ROOT
 
 BANKS = {"interview": AI_ENGINEER, "behavioral": BEHAVIORAL}
 
@@ -26,7 +26,7 @@ _WORD_FILLERS = re.compile(r"\b(um+|uh+|hmm+|erm+|er+)\b", re.IGNORECASE)
 _PHRASE_FILLERS = ["basically", "actually", "literally", "you know",
                    "kind of", "sort of", "like", "right"]
 
-TRANSCRIPTS_DIR = Path(__file__).parent / "transcripts"
+TRANSCRIPTS_DIR = PROJECT_ROOT / "transcripts"
 
 
 class Session:

@@ -26,14 +26,14 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-import config
-import stt
-import tts
-from llm import chat, extract_json
-from prompts import feedback_system, interviewer_system
-from questions import DAILY_STARTERS
-from session import SESSIONS, Session, get
-from stt import transcribe
+from speakloop import config
+from speakloop import stt
+from speakloop import tts
+from speakloop.llm import chat, extract_json
+from speakloop.prompts import feedback_system, interviewer_system
+from speakloop.questions import DAILY_STARTERS
+from speakloop.session import SESSIONS, Session, get
+from speakloop.stt import transcribe
 
 
 @asynccontextmanager
@@ -206,7 +206,7 @@ def tts_file(name: str) -> FileResponse:
     if not (len(name) == 32 + 4 and name.endswith(".wav")
             and all(c in "0123456789abcdef" for c in name[:32])):
         raise HTTPException(400, "bad tts name")
-    path = Path(__file__).parent / "tts_cache" / name
+    path = config.PROJECT_ROOT / "tts_cache" / name
     if not path.exists():
         raise HTTPException(404, "expired or missing")
     return FileResponse(path, media_type="audio/wav")
@@ -235,7 +235,7 @@ def feedback(session_id: str = Form(...)) -> dict:
             "transcript_file": path.name}
 
 
-app.mount("/", StaticFiles(directory=Path(__file__).parent / "static",
+app.mount("/", StaticFiles(directory=config.PROJECT_ROOT / "static",
                            html=True), name="static")
 
 
