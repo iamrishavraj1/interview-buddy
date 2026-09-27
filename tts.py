@@ -1,23 +1,25 @@
-"""Server-side TTS via macOS `say` — replaces the browser's robotic voice.
+"""Server-side TTS — cross-platform, 100% local (no cloud, no API keys).
 
-Why: Chrome's default speechSynthesis voice sounds flat. macOS ships much
-better voices (Aman/Tara = Indian English, Samantha, Daniel) and you can
-download Premium ones (System Settings -> Accessibility -> Spoken Content
--> System Voice -> Manage Voices). Still 100% local and free; synthesis
-takes ~0.2 s for a sentence.
+Engines by OS (auto-detected):
+- macOS   -> built-in `say` (best quality: Aman/Tara/Samantha + Premium voices)
+- Windows -> built-in SAPI voices via PowerShell System.Speech
+            (Zira/David/Heera Desktop — shipped with Windows)
+- Linux   -> espeak-ng (`sudo apt install espeak-ng`; pip fallbacks later)
 
-Gotcha learned here: `say -v '?'` returns LONG names ("Aman (English
-(India))") with a SINGLE space before the locale when called from a
-subprocess — parse with `\s+`, not column widths. Both the long and the
-short name ("Aman") work for synthesis; we try long first, short as
-fallback (see synth()).
+Flow stays identical on every OS: synth(text, voice) -> WAV in tts_cache/
+-> served at /tts/<name> -> frontend plays it with `new Audio(url)`. If the
+engine fails for any reason we return None and the frontend falls back to
+browser speechSynthesis.
 
-Flow: synth(text, voice) -> WAV file in tts_cache/ -> served at
-/tts/<name> -> frontend plays it with `new Audio(url)`. If say fails for
-any reason we return None and the frontend falls back to speechSynthesis.
+macOS gotcha kept from the first build: `say -v '?'` returns LONG names
+("Aman (English (India))") with a SINGLE space before the locale when called
+from a subprocess — parse with `\\s+`, not column widths. Long and short
+names both work for synthesis; we try long first, short as fallback.
 """
+import base64
 import re
 import subprocess
+import sys
 import time
 import uuid
 from pathlib import Path
@@ -27,6 +29,14 @@ from config import TTS_VOICE
 CACHE = Path(__file__).parent / "tts_cache"
 CACHE.mkdir(exist_ok=True)
 
+if sys.platform == "darwin":
+    PLATFORM = "darwin"
+elif sys.platform.startswith("win"):
+    PLATFORM = "win32"
+else:
+    PLATFORM = "linux"
+
+# ---------------------------------------------------------------- macOS ----
 # Novelty/robotic voices that would make the picker silly.
 NOVELTY = {"Bad News", "Bahh", "Bells", "Boing", "Bubbles", "Cellos",
            "Wobble", "Good News", "Jester", "Organ", "Ralph", "Superstar",
@@ -47,8 +57,7 @@ def _base(name: str) -> str:
     return re.sub(r"\s*\(English.*?\)\s*$", "", name).strip()
 
 
-def _voice_pairs() -> list[tuple[str, str]]:
-    """(listed_name, locale) for every installed voice, deduped."""
+def _macos_voice_pairs() -> list[tuple[str, str]]:
     try:
         out = subprocess.run(["say", "-v", "?"], capture_output=True,
                              text=True, timeout=5, check=True).stdout
@@ -62,9 +71,7 @@ def _voice_pairs() -> list[tuple[str, str]]:
     return pairs
 
 
-def english_voices() -> list[dict]:
-    """Picker-friendly list: Indian voices first, then Premium, rest after.
-    `name` is what you pass to `say -v`; `label` is for display."""
+def _macos_english_voices() -> list[dict]:
     def rank(item):
         name, locale = item
         base = _base(name)
@@ -76,19 +83,11 @@ def english_voices() -> list[dict]:
             return (1, name)
         return (2, name)
 
-    pairs = sorted((p for p in _voice_pairs() if rank(p)[0] < 9), key=rank)
+    pairs = sorted((p for p in _macos_voice_pairs() if rank(p)[0] < 9), key=rank)
     return [{"name": n,
              "label": _LOCALE_LABEL.get(loc, loc.replace("en_", "")),
              "base": _base(n)}
             for n, loc in pairs]
-
-
-def pick_voice() -> str | None:
-    """Auto = first of english_voices() -> Indian voice if installed."""
-    if TTS_VOICE != "auto":            # explicit env override wins as-is
-        return TTS_VOICE
-    vs = english_voices()
-    return vs[0]["name"] if vs else None
 
 
 def _say(voice: str, out_path: Path, text: str) -> bool:
@@ -102,22 +101,113 @@ def _say(voice: str, out_path: Path, text: str) -> bool:
         return False
 
 
-def synth(text: str, voice: str | None = None) -> str | None:
-    """text -> URL of a WAV file (or None on any failure).
+# -------------------------------------------------------------- Windows ----
+def _ps_encode(script: str) -> str:
+    return base64.b64encode(script.encode("utf-16-le")).decode("ascii")
 
-    `voice` is the user's picker choice (a full listed name); falls back
-    to pick_voice(). If the full name fails to synthesize, retries once
-    with its short base name, then gives up (browser TTS takes over).
-    """
-    v = (voice or "").strip()[:64] or pick_voice()
+
+def _sapi_voices() -> list[tuple[str, str]]:
+    """Installed SAPI voices as (name, culture) — e.g. ('Microsoft Heera
+    Desktop', 'en-IN'). No quoting issues: the script goes over as an
+    -EncodedCommand (base64 UTF-16LE)."""
+    script = (
+        "Add-Type -AssemblyName System.Speech\n"
+        "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer\n"
+        "$s.GetInstalledVoices() | ForEach-Object { "
+        "\"$($_.VoiceInfo.Name)|$($_.VoiceInfo.Culture.Name)\" }\n"
+        "$s.Dispose()"
+    )
+    try:
+        out = subprocess.run(
+            ["powershell", "-NoProfile", "-EncodedCommand", _ps_encode(script)],
+            capture_output=True, text=True, timeout=25, check=True).stdout
+    except Exception:
+        return []
+    pairs: list[tuple[str, str]] = []
+    for line in out.splitlines():
+        if "|" in line:
+            name, culture = line.rsplit("|", 1)
+            pairs.append((name.strip(), culture.strip()))
+    return pairs
+
+
+def _sapi_synth(voice: str | None, out_path: Path, text: str) -> bool:
+    text = (text or "").replace('"@', '"@ ')[:2000]  # here-string guard
+    voice_line = f"$s.SelectVoice('{voice}')\n" if voice else ""
+    script = (
+        "Add-Type -AssemblyName System.Speech\n"
+        "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer\n"
+        f"$s.SetOutputToWaveFile('{out_path.as_posix()}')\n"
+        + voice_line +
+        "$s.Rate = 0\n"
+        "$s.Speak(@\"\n" + text + "\n\"@)\n"
+        "$s.Dispose()"
+    )
+    try:
+        subprocess.run(
+            ["powershell", "-NoProfile", "-EncodedCommand", _ps_encode(script)],
+            timeout=60, check=True, capture_output=True)
+        return out_path.exists() and out_path.stat().st_size > 1000
+    except Exception:
+        return False
+
+
+# ---------------------------------------------------------------- Linux ----
+def _espeak_synth(voice: str | None, out_path: Path, text: str) -> bool:
+    # espeak-ng voice ids look like "en-us"; accept any "en*" the user sets
+    v = (voice or "en-us") if (voice or "").startswith("en") else "en-us"
+    try:
+        subprocess.run(["espeak-ng", "-v", v, "-w", str(out_path), text],
+                       timeout=60, check=True, capture_output=True)
+        return True
+    except Exception:
+        return False
+
+
+# --------------------------------------------------------------- public ----
+def english_voices() -> list[dict]:
+    """Picker-friendly list, same shape on every OS:
+    [{name, label, base}] — `name` is what synth() accepts."""
+    if PLATFORM == "darwin":
+        return _macos_english_voices()
+    if PLATFORM == "win32":
+        return [{"name": n,
+                 "label": c.replace("en-", "").upper() or "WIN",
+                 "base": n}
+                for n, c in _sapi_voices() if c.lower().startswith("en")]
+    return [{"name": "en-us", "label": "espeak-ng", "base": "en-us"}]
+
+
+def pick_voice() -> str | None:
+    """Auto = platform default (Indian voice on macOS, en-IN SAPI on
+    Windows, espeak-ng on Linux). Explicit TTS_VOICE env wins as-is."""
+    if TTS_VOICE != "auto":
+        return TTS_VOICE
+    if PLATFORM == "linux":
+        return "en-us"
+    vs = english_voices()
+    return vs[0]["name"] if vs else None
+
+
+def synth(text: str, voice: str | None = None) -> str | None:
+    """text -> URL of a WAV file (or None on any failure -> browser TTS)."""
+    v = (voice or "").strip()[:80] or pick_voice()
     if not v:
         return None
     _cleanup()
     out = CACHE / f"{uuid.uuid4().hex}.wav"
-    if _say(v, out, text):
-        return f"/tts/{out.name}"
-    base = _base(v)
-    if base != v and _say(base, out, text):
+
+    if PLATFORM == "darwin":
+        ok = _say(v, out, text)
+        if not ok:
+            base = _base(v)
+            ok = base != v and _say(base, out, text)
+    elif PLATFORM == "win32":
+        ok = _sapi_synth(v, out, text)
+    else:
+        ok = _espeak_synth(v, out, text)
+
+    if ok:
         return f"/tts/{out.name}"
     out.unlink(missing_ok=True)
     return None

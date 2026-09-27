@@ -2,9 +2,12 @@
 
 ![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white) ![Runs%20offline](https://img.shields.io/badge/Runs-100%25%20offline-teal?style=flat-square)
 
-A **local, free, speaking** mock-interview coach. It asks questions **out loud**,
-listens to your spoken answers, and coaches you — everything runs on your Mac
-(Ollama + faster-whisper + macOS voices), so practice costs ₹0 and works offline.
+A **local, free, AI speaking coach** — mock interviews, behavioral practice or
+daily spoken-English conversation. It asks **out loud**, listens to your spoken
+answers, and coaches you — everything runs **on your machine** (Ollama +
+faster-whisper + your OS's native voices), so practice costs ₹0 and works offline.
+
+**Cross-platform** — macOS, Windows and Linux are all first-class (see the table below).
 
 ## What it does
 
@@ -25,8 +28,17 @@ in that mode right away (the old one is dropped). No page refresh, ever.
 
 ## How to run
 
-Prerequisites: [Ollama](https://ollama.com) with `qwen3:14b` pulled,
-Python 3.11+, Chrome (for microphone access).
+Prerequisites (all platforms): [Ollama](https://ollama.com) with `qwen3:14b` pulled,
+Python 3.11+, Chrome (for microphone access). No API keys, no cloud — the voice
+engine runs locally on every OS.
+
+| OS | Voice engine (TTS) | Extra setup |
+|---|---|---|
+| macOS | built-in `say` — Aman/Samantha/Premium voices | none |
+| Windows | built-in SAPI — Zira/David/Heera voices | none |
+| Linux | espeak-ng | `sudo apt install espeak-ng` |
+
+Change the voice live from the in-app picker, or set `TTS_VOICE` in `.env` (see `.env.example`).
 
 ```bash
 git clone https://github.com/iamrishavraj1/speakloop.git
