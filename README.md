@@ -11,20 +11,25 @@ faster-whisper + your OS's native voices), so practice costs ₹0 and works offl
 
 ## What it does
 
-| Mode | What Loop does |
+| Mode | What Rep does |
 |---|---|
-| **Interview — AI Engineer** | 19 technical questions (RAG, evals, agents, cost, LoRA…), pushes for metrics, one follow-up when your answer is vague |
-| **Behavioral (STAR)** | 12 behavioral questions, coaches you toward Situation-Task-Action-Result |
-| **Daily English chat** | Free-flowing conversation for daily spoken-English practice |
+| **Daily speaking practice** | Free-flowing conversation for daily spoken-English reps — the default |
+| **Interview prep** | Pick a bank (AI Engineering: RAG, evals, agents, cost…), pushes for metrics, one follow-up when your answer is vague |
+| **Behavioral (STAR)** | Coaches you toward Situation-Task-Action-Result |
 
-Every reply is **spoken in a natural macOS voice** (server-side `say` → WAV, with
-the browser voice as fallback; Premium voices supported). Live **filler-word
+Every reply is **spoken in a natural native OS voice** (server-side TTS → WAV,
+with the browser voice as fallback; Premium voices supported on macOS). Live **filler-word
 counter** (um/uh/basically/like…). Click **End & feedback** for a coach report:
 score /10, strengths, improvements, best & weakest answer, one concrete next
 focus. Transcripts save to `transcripts/`.
 
 **Switching modes is instant** — change the dropdown and a fresh session starts
 in that mode right away (the old one is dropped). No page refresh, ever.
+
+**Spoken languages:** English today (question banks + STT bias + TTS voices are
+English-first). More languages — Hindi/Hinglish first — are the top contribution
+ask; the touchpoints are one question bank + one `initial_prompt` (see
+[CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## How to run
 
@@ -51,7 +56,7 @@ open http://localhost:8001
 
 First click of **Start session** warms the models (~10 s the very first time;
 whisper stays loaded after). Allow the **microphone** when Chrome asks. Then:
-mic → answer out loud → mic again → Loop speaks back.
+mic → answer out loud → mic again → Rep speaks back.
 
 ## Architecture
 
@@ -126,6 +131,16 @@ yourspeakreps/
 ├── pyproject.toml        # package metadata, deps, dev extras
 └── requirements.txt      # plain runtime deps (pip install -r users)
 ```
+
+## Roadmap
+
+- [ ] Hindi/Hinglish question banks + STT bias (top ask)
+- [ ] Piper TTS on Linux (better than espeak-ng quality)
+- [ ] Session analytics page — filler-word trend over weeks
+- [ ] Docker one-liner for Linux users
+- [ ] More interview banks (system design out loud, product sense)
+
+Want any of these? [CONTRIBUTING.md](CONTRIBUTING.md) is the place to start.
 
 ## License
 
