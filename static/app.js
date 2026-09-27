@@ -1,4 +1,4 @@
-/* SpeakLoop frontend.
+/* YourSpeakReps frontend.
  * Concepts used (docs/01-concepts.md §2 & §7):
  * - MediaRecorder API: browser records mic -> webm/opus blob -> POST
  * - speechSynthesis: browser speaks the buddy's replies (free, offline)

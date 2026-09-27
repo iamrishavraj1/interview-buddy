@@ -1,4 +1,4 @@
-# 01 — Concepts: how SpeakLoop works
+# 01 — Concepts: how YourSpeakReps works
 
 Every concept in the app, in pipeline order. Each section ends with the
 interview-angle — what this teaches you that also shows up in AI-engineer
@@ -58,7 +58,7 @@ real-time-factor benchmark you ran yourself.
 ## 4. Serving an LLM locally: Ollama's OpenAI-compatible API
 
 Ollama runs GGUF-quantized models and exposes `http://localhost:11434/v1`
-— the **same chat-completions API shape as OpenAI**. So `src/speakloop/llm.py` uses the
+— the **same chat-completions API shape as OpenAI**. So `src/yourspeakreps/llm.py` uses the
 standard `openai` SDK with a different `base_url` (and a dummy key):
 provider becomes configuration, not code. Swap one env var → the same app
 runs against gpt-4o-mini, or later against your own fine-tuned model in
@@ -69,14 +69,14 @@ vLLM. This exact abstraction is why phase 5 of fin-research-agent is cheap.
 interviewer reply cost **444 tokens / 53 s** with thinking on, **40 tokens /
 1.7 s** with Ollama's native `think: false` parameter — 30× for identical
 visible output. (The OpenAI-compat endpoint can't pass that flag, which is
-exactly why `src/speakloop/llm.py` uses the native API.) A think-strip regex remains as a
+exactly why `src/yourspeakreps/llm.py` uses the native API.) A think-strip regex remains as a
 safety net. Latency lesson: *invisible tokens are still real time* — this
 is the same lesson as tracking cost per token in fin-research-agent.
 Cost tracking would count those tokens — latency you pay for nothing.
 
 ## 5. Prompt design: the parts that make it feel like an interviewer
 
-Four techniques, all in `src/speakloop/prompts.py`:
+Four techniques, all in `src/yourspeakreps/prompts.py`:
 
 1. **Persona + constraints.** Role ("warm but rigorous interviewer"),
    candidate context (SDE-2 → AI engineer), and *spoken-style rules*: no
@@ -106,7 +106,7 @@ pairs) in a Python object and replay the last N turns into every request
 (`MAX_HISTORY_TURNS=10` — context trimming keeps requests fast and focused;
 there's a real cost/quality trade-off in choosing N).
 
-The **question bank** lives in `src/speakloop/questions.py` (in code — versioned,
+The **question bank** lives in `src/yourspeakreps/questions.py` (in code — versioned,
 inspectable) and the server tracks `q_index`. Filler words ("um", "like",
 "basically"…) are counted **locally with regexes** — cheap, explainable,
 deterministic — while the LLM judges *quality*. Right tool for each job.
@@ -122,7 +122,7 @@ v1 used the browser's `speechSynthesis` — free and instant, but the default
 voice sounds robotic. Final design: the **server speaks first, browser is
 the fallback**.
 
-`src/speakloop/tts.py` picks the best installed macOS voice (Premium voices if present,
+`src/yourspeakreps/tts.py` picks the best installed macOS voice (Premium voices if present,
 else Samantha/Aman/Tara/Daniel — config via `TTS_VOICE`), runs the `say`
 CLI to synthesize a **WAV** (`--data-format=LEI16@22050`), and serves it
 from `tts_cache/` at `/tts/<hex>.wav` (name validated against path
@@ -139,7 +139,7 @@ models: config-level swap, code unchanged.
 
 ## 8. FastAPI shape (and why sync, not async)
 
-`src/speakloop/server.py` endpoints are plain `def` — FastAPI runs sync handlers in a
+`src/yourspeakreps/server.py` endpoints are plain `def` — FastAPI runs sync handlers in a
 **threadpool**, which is the right call here: whisper + Ollama calls block
 for seconds, single user, no need for async complexity. The moment you have
 many concurrent streaming clients (fin-research-agent phase 4), that's
