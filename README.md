@@ -1,4 +1,6 @@
-# 🎙️ Interview Buddy
+# 🎙️ SpeakLoop
+
+![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white) ![Runs%20offline](https://img.shields.io/badge/Runs-100%25%20offline-teal?style=flat-square)
 
 A **local, free, speaking** mock-interview coach. It asks questions **out loud**,
 listens to your spoken answers, and coaches you — everything runs on your Mac
@@ -6,7 +8,7 @@ listens to your spoken answers, and coaches you — everything runs on your Mac
 
 ## What it does
 
-| Mode | What Buddy does |
+| Mode | What Loop does |
 |---|---|
 | **Interview — AI Engineer** | 19 technical questions (RAG, evals, agents, cost, LoRA…), pushes for metrics, one follow-up when your answer is vague |
 | **Behavioral (STAR)** | 12 behavioral questions, coaches you toward Situation-Task-Action-Result |
@@ -27,8 +29,8 @@ Prerequisites: [Ollama](https://ollama.com) with `qwen3:14b` pulled,
 Python 3.11+, Chrome (for microphone access).
 
 ```bash
-git clone https://github.com/iamrishavraj1/interview-buddy.git
-cd interview-buddy
+git clone https://github.com/iamrishavraj1/speakloop.git
+cd speakloop
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python server.py
@@ -37,7 +39,7 @@ open http://localhost:8001
 
 First click of **Start session** warms the models (~10 s the very first time;
 whisper stays loaded after). Allow the **microphone** when Chrome asks. Then:
-mic → answer out loud → mic again → Buddy speaks back.
+mic → answer out loud → mic again → Loop speaks back.
 
 ## Architecture
 
@@ -98,6 +100,16 @@ Chrome (localhost:8001)                    FastAPI (server.py)
     Voices → download **Ava (Premium)** / **Zoe (Premium)** — then set
     `TTS_VOICE="Ava (Premium)"`. Genuinely human-sounding, still offline.
   - The app auto-picks the best installed voice when `TTS_VOICE=auto`.
+
+## License
+
+![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square)
+
+© 2026 Rishav Raj. Source is public for **learning and evaluation** — copying,
+redistributing, or using it in your own projects or client work is **not
+permitted** without written permission. See [LICENSE](LICENSE).
+
+Commercial licensing / collaboration → [iamrishavraj1@gmail.com](mailto:iamrishavraj1@gmail.com)
 
 ---
 

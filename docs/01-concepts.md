@@ -1,4 +1,4 @@
-# 01 — Concepts: how Interview Buddy works
+# 01 — Concepts: how SpeakLoop works
 
 Every concept in the app, in pipeline order. Each section ends with the
 interview-angle — what this teaches you that also shows up in AI-engineer

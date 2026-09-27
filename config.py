@@ -21,6 +21,6 @@ TTS_VOICE = os.getenv("TTS_VOICE", "auto")
 # Conversation
 MAX_HISTORY_TURNS = 10     # how many previous user/assistant turns the LLM sees
 SPOKEN_WORD_LIMIT = 90     # interviewer replies stay short enough to be spoken
-RETRY_LIMIT = 2            # coaching retries per question before Buddy
+RETRY_LIMIT = 2            # coaching retries per question before Loop
                            # demonstrates the correct version and moves on
 PORT = int(os.getenv("PORT", "8001"))

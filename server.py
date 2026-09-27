@@ -1,4 +1,4 @@
-"""Interview Buddy — FastAPI backend.
+"""SpeakLoop — FastAPI backend.
 
 Run:  python server.py     →  http://localhost:8001
 
@@ -44,13 +44,13 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="Interview Buddy", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="SpeakLoop", version="1.0.0", lifespan=lifespan)
 
 OPENINGS = {
-    "interview": ("Hi! I'm Buddy. We'll go through {n} questions, and you answer "
+    "interview": ("Hi! I'm Loop. We'll go through {n} questions, and you answer "
                   "like you're talking to a real interviewer. Ready? "
                   "First question: {q}"),
-    "behavioral": ("Hi! I'm Buddy. Today we practice behavioral answers — "
+    "behavioral": ("Hi! I'm Loop. Today we practice behavioral answers — "
                    "use the STAR way: situation, task, action, result. "
                    "First question: {q}"),
     "daily": "Hi! Great to hear you. Let's just chat — " + DAILY_STARTERS[0],

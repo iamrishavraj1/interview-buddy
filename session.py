@@ -119,7 +119,7 @@ class Session:
         base = TRANSCRIPTS_DIR / f"{stamp}-{self.mode}"
         s = self.stats()
         (base.with_suffix(".md")).write_text(
-            f"# Interview Buddy session — {stamp} ({self.mode})\n\n"
+            f"# SpeakLoop session — {stamp} ({self.mode})\n\n"
             f"Score: {report.get('overall_score', '?')}/10\n\n"
             f"## Stats\n```json\n{json.dumps(s, indent=2)}\n```\n\n"
             f"## Transcript\n{self.digest()}\n\n"
