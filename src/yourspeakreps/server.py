@@ -1,4 +1,4 @@
-"""LoopTalk — FastAPI backend.
+"""YourSpeakReps — FastAPI backend.
 
 Run:  python server.py     →  http://localhost:8001
 
@@ -26,14 +26,14 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from looptalk import config
-from looptalk import stt
-from looptalk import tts
-from looptalk.llm import chat, extract_json
-from looptalk.prompts import feedback_system, interviewer_system
-from looptalk.questions import DAILY_STARTERS
-from looptalk.session import SESSIONS, Session, get
-from looptalk.stt import transcribe
+from yourspeakreps import config
+from yourspeakreps import stt
+from yourspeakreps import tts
+from yourspeakreps.llm import chat, extract_json
+from yourspeakreps.prompts import feedback_system, interviewer_system
+from yourspeakreps.questions import DAILY_STARTERS
+from yourspeakreps.session import SESSIONS, Session, get
+from yourspeakreps.stt import transcribe
 
 
 @asynccontextmanager
@@ -44,13 +44,13 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="LoopTalk", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="YourSpeakReps", version="1.0.0", lifespan=lifespan)
 
 OPENINGS = {
-    "interview": ("Hi! I'm Loop. We'll go through {n} questions, and you answer "
+    "interview": ("Hi! I'm Rep. We'll go through {n} questions, and you answer "
                   "like you're talking to a real interviewer. Ready? "
                   "First question: {q}"),
-    "behavioral": ("Hi! I'm Loop. Today we practice behavioral answers — "
+    "behavioral": ("Hi! I'm Rep. Today we practice behavioral answers — "
                    "use the STAR way: situation, task, action, result. "
                    "First question: {q}"),
     "daily": "Hi! Great to hear you. Let's just chat — " + DAILY_STARTERS[0],

@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "looptalk"
+name = "yourspeakreps"
 version = "1.0.0"
 description = "Local, free, cross-platform AI speaking coach — mock interviews, behavioral practice, spoken English"
 readme = "README.md"
@@ -22,7 +22,7 @@ dependencies = [
 dev = ["pytest>=8.2", "httpx"]
 
 [project.urls]
-Repository = "https://github.com/iamrishavraj1/looptalk"
+Repository = "https://github.com/iamrishavraj1/yourspeakreps"
 Homepage = "https://iamrishavraj1.com"
 
 [tool.setuptools.packages.find]

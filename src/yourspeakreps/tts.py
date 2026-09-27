@@ -24,7 +24,7 @@ import time
 import uuid
 from pathlib import Path
 
-from looptalk.config import PROJECT_ROOT, TTS_VOICE
+from yourspeakreps.config import PROJECT_ROOT, TTS_VOICE
 
 CACHE = PROJECT_ROOT / "tts_cache"
 CACHE.mkdir(exist_ok=True)

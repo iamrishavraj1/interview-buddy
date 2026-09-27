@@ -12,7 +12,7 @@ import threading
 
 from faster_whisper import WhisperModel
 
-from looptalk.config import WHISPER_MODEL, WHISPER_THREADS
+from yourspeakreps.config import WHISPER_MODEL, WHISPER_THREADS
 
 # Tech vocabulary the decoder would otherwise mangle ("RAG" -> "rag", etc.)
 INITIAL_PROMPT = (

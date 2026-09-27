@@ -1,4 +1,4 @@
-# 🎙️ LoopTalk
+# 🎙️ YourSpeakReps
 
 ![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white) ![Runs%20offline](https://img.shields.io/badge/Runs-100%25%20offline-teal?style=flat-square)
 
@@ -41,11 +41,11 @@ engine runs locally on every OS.
 Change the voice live from the in-app picker, or set `TTS_VOICE` in `.env` (see `.env.example`).
 
 ```bash
-git clone https://github.com/iamrishavraj1/looptalk.git
-cd looptalk
+git clone https://github.com/iamrishavraj1/yourspeakreps.git
+cd yourspeakreps
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
-python -m looptalk.server
+python -m yourspeakreps.server
 open http://localhost:8001
 ```
 
@@ -88,11 +88,11 @@ Chrome (localhost:8001)                    FastAPI (server.py)
 |---|---|
 | `docs/01-concepts.md` | **Every concept**: STT, quantization, LLM serving, prompt design, session state, MediaRecorder, TTS, FastAPI |
 | `docs/02-build-guide.md` | **Build it yourself** — 7 steps with acceptance checks, if you want to rebuild from scratch to learn |
-| `src/looptalk/server.py` | FastAPI app: API surface, control-note pattern, graceful degradation |
-| `src/looptalk/session.py` | State, question progression, filler analytics, transcript saving |
-| `src/looptalk/prompts.py` | Interviewer persona, spoken-style constraints, JSON contract |
-| `src/looptalk/stt.py` / `llm.py` | whisper wrapper / Ollama client with think-stripping |
-| `src/looptalk/tts.py` | cross-platform TTS: macOS `say` / Windows SAPI / Linux espeak-ng |
+| `src/yourspeakreps/server.py` | FastAPI app: API surface, control-note pattern, graceful degradation |
+| `src/yourspeakreps/session.py` | State, question progression, filler analytics, transcript saving |
+| `src/yourspeakreps/prompts.py` | Interviewer persona, spoken-style constraints, JSON contract |
+| `src/yourspeakreps/stt.py` / `llm.py` | whisper wrapper / Ollama client with think-stripping |
+| `src/yourspeakreps/tts.py` | cross-platform TTS: macOS `say` / Windows SAPI / Linux espeak-ng |
 | `static/app.js` | MediaRecorder, speechSynthesis, UI state machine |
 | `tests/` | smoke tests (config, question banks, routes) |
 
@@ -118,8 +118,8 @@ Chrome (localhost:8001)                    FastAPI (server.py)
 ## Project structure
 
 ```
-looptalk/
-├── src/looptalk/        # the app (config, server, stt, llm, tts, session, prompts)
+yourspeakreps/
+├── src/yourspeakreps/        # the app (config, server, stt, llm, tts, session, prompts)
 ├── static/               # frontend (index.html, app.js)
 ├── docs/                 # concept + build guides
 ├── tests/                # smoke tests (pytest)

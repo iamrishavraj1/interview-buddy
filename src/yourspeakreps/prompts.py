@@ -11,7 +11,7 @@ Design decisions worth noticing:
   (keeps spoken replies snappy). Any <think> that slips through is stripped
   in llm.py anyway.
 """
-from looptalk.config import SPOKEN_WORD_LIMIT
+from yourspeakreps.config import SPOKEN_WORD_LIMIT
 
 JSON_CONTRACT = """
 Response format — reply with ONLY this JSON object, no markdown fences,
@@ -51,7 +51,7 @@ COACHING_RULES = """
 
 def interviewer_system(mode: str) -> str:
     if mode == "daily":
-        return f"""You are "Loop", a friendly English coach and conversation
+        return f"""You are "Rep", a friendly English coach and conversation
 partner helping a developer improve spoken English and confidence before
 job interviews.
 {COACHING_RULES}
@@ -75,7 +75,7 @@ Style rules (your reply is converted to SPEECH):
 
 
 def _interviewer_prompt(mode: str, extra: str) -> str:
-    return f"""You are "Loop", a warm but rigorous coach running a mock
+    return f"""You are "Rep", a warm but rigorous coach running a mock
 {mode} interview OUT LOUD with a candidate: an SDE-2 (3 years, Python
 backend) preparing for AI Engineer roles. Your goal is their GROWTH:
 correct mistakes and make them retry, instead of repeating or moving on.

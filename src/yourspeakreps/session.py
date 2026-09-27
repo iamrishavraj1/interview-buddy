@@ -14,8 +14,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from looptalk.questions import AI_ENGINEER, BEHAVIORAL, DAILY_STARTERS
-from looptalk.config import MAX_HISTORY_TURNS, PROJECT_ROOT
+from yourspeakreps.questions import AI_ENGINEER, BEHAVIORAL, DAILY_STARTERS
+from yourspeakreps.config import MAX_HISTORY_TURNS, PROJECT_ROOT
 
 BANKS = {"interview": AI_ENGINEER, "behavioral": BEHAVIORAL}
 
@@ -119,7 +119,7 @@ class Session:
         base = TRANSCRIPTS_DIR / f"{stamp}-{self.mode}"
         s = self.stats()
         (base.with_suffix(".md")).write_text(
-            f"# LoopTalk session — {stamp} ({self.mode})\n\n"
+            f"# YourSpeakReps session — {stamp} ({self.mode})\n\n"
             f"Score: {report.get('overall_score', '?')}/10\n\n"
             f"## Stats\n```json\n{json.dumps(s, indent=2)}\n```\n\n"
             f"## Transcript\n{self.digest()}\n\n"
