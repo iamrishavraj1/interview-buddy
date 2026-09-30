@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use YourSpeakReps, please cite the original project."
+title: "YourSpeakReps"
+abstract: "A local, free, offline AI speaking coach for spoken English practice and mock interviews."
+authors:
+  - family-names: "Raj"
+    given-names: "Rishav"
+    website: "https://iamrishavraj1.com"
+repository-code: "https://github.com/iamrishavraj1/yourspeakreps"
+url: "https://github.com/iamrishavraj1/yourspeakreps"
+license: "Apache-2.0"
+version: "1.0.0"
+date-released: "2026-09-27"

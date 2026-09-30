@@ -3,6 +3,20 @@
 First — thank you. This project grows by people who want to **speak better**
 and like the idea of a 100%-local, ₹0/free coach.
 
+## License and attribution
+
+By contributing to YourSpeakReps, you agree that your contribution is licensed
+under the Apache License, Version 2.0.
+
+Please preserve the original project credit:
+
+- **YourSpeakReps** was created by **Rishav Raj**
+- Original repository: <https://github.com/iamrishavraj1/yourspeakreps>
+
+Forks and derivative projects are welcome under the license. If you publish a
+fork, use a clearly different name unless you have permission to present it as
+the official YourSpeakReps project.
+
 ## Setup (2 minutes)
 
 ```bash

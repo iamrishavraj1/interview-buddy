@@ -1,6 +1,6 @@
 # 🎙️ YourSpeakReps
 
-![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white) ![Runs%20offline](https://img.shields.io/badge/Runs-100%25%20offline-teal?style=flat-square)
+![License](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat-square) ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white) ![Runs%20offline](https://img.shields.io/badge/Runs-100%25%20offline-teal?style=flat-square)
 
 A **local, free, AI speaking coach** — mock interviews, behavioral practice or
 daily spoken-English conversation. It asks **out loud**, listens to your spoken
@@ -8,6 +8,23 @@ answers, and coaches you — everything runs **on your machine** (Ollama +
 faster-whisper + your OS's native voices), so practice costs ₹0 and works offline.
 
 **Cross-platform** — macOS, Windows and Linux are all first-class (see the table below).
+
+## Open source, credit and brand
+
+YourSpeakReps is open source under the [Apache License 2.0](LICENSE). It was
+created by **Rishav Raj**.
+
+If you use, fork, write about, or build on this project, please credit the
+original project:
+
+> YourSpeakReps — <https://github.com/iamrishavraj1/yourspeakreps>
+> Created by Rishav Raj — <https://iamrishavraj1.com>
+
+The license lets you use, modify and redistribute the code, while keeping the
+copyright, license and NOTICE attribution with distributed copies. The name
+**YourSpeakReps** and the project branding identify this official project; if
+you publish a fork, use a clearly different name unless you have permission to
+present it as official.
 
 ## What it does
 
@@ -144,13 +161,14 @@ Want any of these? [CONTRIBUTING.md](CONTRIBUTING.md) is the place to start.
 
 ## License
 
-![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square)
+![License](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat-square)
 
-© 2026 Rishav Raj. Source is public for **learning and evaluation** — copying,
-redistributing, or using it in your own projects or client work is **not
-permitted** without written permission. See [LICENSE](LICENSE).
+Copyright 2026 Rishav Raj.
 
-Commercial licensing / collaboration → [iamrishavraj1@gmail.com](mailto:iamrishavraj1@gmail.com)
+Licensed under the [Apache License, Version 2.0](LICENSE). Please keep the
+[NOTICE](NOTICE) attribution with redistributions. The Apache-2.0 license grants
+rights to use the code; it does not grant rights to use the **YourSpeakReps**
+name, logo or branding in a way that suggests a fork is the official project.
 
 ---
 

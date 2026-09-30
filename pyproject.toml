@@ -10,6 +10,11 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Rishav Raj", email = "iamrishavraj1@gmail.com" }]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+]
 dependencies = [
     "faster-whisper>=1.0",
     "fastapi>=0.111",
@@ -24,6 +29,7 @@ dev = ["pytest>=8.2", "httpx"]
 [project.urls]
 Repository = "https://github.com/iamrishavraj1/yourspeakreps"
 Homepage = "https://iamrishavraj1.com"
+Issues = "https://github.com/iamrishavraj1/yourspeakreps/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
