@@ -1,0 +1,55 @@
+name: Question bank or spoken language
+description: Add interview questions, spoken-English prompts, Hindi/Hinglish, or another language.
+title: "[Question bank]: "
+labels: ["enhancement", "good first issue", "help wanted"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Question banks are one of the easiest and highest-impact ways to contribute. Keep prompts spoken, short, and natural.
+  - type: dropdown
+    id: contribution_type
+    attributes:
+      label: Contribution type
+      options:
+        - Add questions to an existing bank
+        - Add a new interview bank
+        - Add Hindi/Hinglish support
+        - Add another spoken language
+        - Improve STT bias or TTS guidance
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: Language or bank
+      placeholder: "Hindi/Hinglish, AI Engineering, Behavioral STAR, Product Sense..."
+    validations:
+      required: true
+  - type: textarea
+    id: prompts
+    attributes:
+      label: Proposed questions or prompts
+      description: Add the questions you want included. One question per line works well.
+      placeholder: |
+        Tell me about yourself in 60 seconds.
+        Explain a project where you used RAG.
+        Walk me through a conflict you handled at work.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Voice, STT, or cultural notes
+      description: Mention pronunciation, vocabulary, voice recommendations, or local context.
+  - type: checkboxes
+    id: quality
+    attributes:
+      label: Quality checklist
+      options:
+        - label: Questions are short enough to be spoken out loud.
+          required: true
+        - label: Questions avoid private, offensive, or discriminatory content.
+          required: true
+        - label: I am okay with this contribution being licensed under Apache-2.0.
+          required: true

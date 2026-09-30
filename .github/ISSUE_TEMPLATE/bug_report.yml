@@ -1,0 +1,78 @@
+name: Bug report
+description: Report something broken in setup, microphone, STT, TTS, LLM, or UI.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make YourSpeakReps more reliable. Please include enough detail for someone else to reproduce the problem.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before opening
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: I can reproduce this on the latest `main` branch or latest release.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Paste the release version, tag, or commit SHA.
+      placeholder: "v1.0.0 or 778e9dd"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include Python version, Ollama model, browser, microphone/TTS voice, and any relevant hardware.
+      placeholder: |
+        Python:
+        Ollama model:
+        Browser:
+        TTS voice:
+        Hardware:
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run ...
+        2. Click ...
+        3. Say ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste terminal output, browser console errors, or screenshots if useful.
+      render: shell
